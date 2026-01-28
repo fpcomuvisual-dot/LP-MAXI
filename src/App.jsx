@@ -227,71 +227,82 @@ const StrategyModal = ({ strategy, onClose, onCtaClick }) => {
   if (!strategy) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-4">
+      {/* Overlay Escuro (Ao clicar fecha) */}
       <motion.div
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+        className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm"
         onClick={onClose}
       />
+
+      {/* O Card do Modal */}
       <motion.div
         layoutId={`card-${strategy.id}`}
-        className="relative w-full max-w-3xl bg-slate-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl z-10"
+        initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        className="relative w-full max-w-3xl bg-slate-900 border-t md:border border-white/10 rounded-t-3xl md:rounded-3xl shadow-2xl z-10 flex flex-col max-h-[90vh] md:max-h-[85vh]"
       >
-        {/* Header */}
-        <div className={`h-40 bg-gradient-to-r ${strategy.color} to-slate-900 p-8 flex items-end relative overflow-hidden`}>
-          <div className="absolute top-0 right-0 p-8 opacity-10 text-white transform translate-x-10 -translate-y-10 scale-150">
+        {/* Header Fixo (Não rola) */}
+        <div className={`shrink-0 h-32 md:h-40 bg-gradient-to-r ${strategy.color} to-slate-900 p-6 md:p-8 flex items-end relative overflow-hidden rounded-t-3xl`}>
+          <div className="absolute top-0 right-0 p-8 opacity-10 text-white transform translate-x-10 -translate-y-10 scale-150 pointer-events-none">
             {React.cloneElement(strategy.icon, { size: 180 })}
           </div>
-          <div>
-            <motion.h3 className="text-4xl font-black text-white relative z-10 mb-1">{strategy.title}</motion.h3>
-            <p className="text-white/80 font-medium relative z-10">{strategy.subtitle}</p>
+          <div className="w-full pr-8"> {/* Padding right para o texto não ficar baixo do X */}
+            <motion.h3 className="text-2xl md:text-4xl font-black text-white relative z-10 mb-1 leading-tight">{strategy.title}</motion.h3>
+            <p className="text-white/80 text-xs md:text-base font-medium relative z-10 line-clamp-1">{strategy.subtitle}</p>
           </div>
-          <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-black/20 hover:bg-black/40 rounded-full text-white transition-colors cursor-pointer">
+
+          {/* Botão Fechar (Fixo e com z-index alto) */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 bg-black/40 hover:bg-black/60 rounded-full text-white transition-colors z-50 backdrop-blur-md border border-white/10"
+          >
             <X size={24} />
           </button>
         </div>
 
-        {/* Body */}
-        <div className="p-8 grid md:grid-cols-5 gap-8 bg-slate-900 text-left">
-          <div className="md:col-span-3 space-y-6">
-            <div className="prose prose-invert prose-sm">
-              <div className="text-lg text-gray-200 leading-relaxed font-light">
-                {strategy.fullDesc}
+        {/* Corpo com Scroll (Aqui está a correção) */}
+        <div className="overflow-y-auto p-6 md:p-8 bg-slate-900 overscroll-contain">
+          <div className="grid md:grid-cols-5 gap-8">
+            <div className="md:col-span-3 space-y-6">
+              <div className="prose prose-invert prose-sm">
+                <div className="text-base md:text-lg text-gray-200 leading-relaxed font-light text-left">
+                  {strategy.fullDesc}
+                </div>
+              </div>
+
+              {/* Visual Interativo */}
+              <div className="mt-6 rounded-xl overflow-hidden border border-white/5">
+                <strategy.VisualComponent />
               </div>
             </div>
 
-            {/* Visual Interativo */}
-            <div className="mt-6">
-              <strategy.VisualComponent />
-            </div>
-          </div>
+            <div className="md:col-span-2 space-y-4 pt-4 md:pt-0 border-t md:border-t-0 border-white/10 text-left">
+              <h5 className="text-xs font-bold text-gray-500 uppercase tracking-widest">Métricas Projetadas</h5>
+              <div className="space-y-3">
+                {strategy.metrics.map((m, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ x: 20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: 0.2 + (idx * 0.1) }}
+                    className="bg-white/5 rounded-xl p-4 border border-white/5"
+                  >
+                    <div className="text-xs text-gray-400">{m.label}</div>
+                    <div className="text-2xl font-bold text-white my-1">{m.value}</div>
+                    <div className="text-[10px] text-gray-500 uppercase">{m.sub}</div>
+                  </motion.div>
+                ))}
+              </div>
 
-          <div className="md:col-span-2 space-y-4">
-            <h5 className="text-xs font-bold text-gray-500 uppercase tracking-widest">Métricas Projetadas</h5>
-            <div className="space-y-3">
-              {strategy.metrics.map((m, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ x: 20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.2 + (idx * 0.1) }}
-                  className="bg-white/5 rounded-xl p-4 border border-white/5 hover:border-white/20 transition-colors"
-                >
-                  <div className="text-xs text-gray-400">{m.label}</div>
-                  <div className="text-2xl font-bold text-white my-1">{m.value}</div>
-                  <div className="text-[10px] text-gray-500 uppercase">{m.sub}</div>
-                </motion.div>
-              ))}
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={onCtaClick}
+                className={`w-full py-4 ${strategy.btnColor} text-white font-bold rounded-xl shadow-lg mt-4 flex items-center justify-center gap-2 mb-8 md:mb-0`}
+              >
+                Ver no Cronograma <ArrowRight size={18} />
+              </motion.button>
             </div>
-
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={onCtaClick}
-              className={`w-full py-4 ${strategy.btnColor} text-white font-bold rounded-xl shadow-lg mt-4 flex items-center justify-center gap-2 group cursor-pointer`}
-            >
-              Ver no Cronograma <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-            </motion.button>
           </div>
         </div>
       </motion.div>
